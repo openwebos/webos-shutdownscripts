@@ -30,9 +30,10 @@
 PATH=@WEBOS_INSTALL_BASE_SBINDIR@:@WEBOS_INSTALL_BASE_BINDIR@:@WEBOS_INSTALL_SBINDIR@:@WEBOS_INSTALL_BINDIR@
 
 # FIXME: restore default value of 60 when NOV-45753 is fixed
+# Note 2012-09-14 NOV-45753 is closed:will not implement
 SLEEP_SECONDS=120
 
-[ -f @WEBOS_INSTALL_DEFAULTCONFDIR@/watchdog ] && source @WEBOS_INSTALL_DEFAULTCONFDIR@/watchdog
+[ -r @WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-watchdog ] && source @WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-watchdog
 
 echo "$0 starting" | logger -s
 
@@ -61,7 +62,7 @@ else
     fi
 fi
 
-# save reason.  If another watchdog is launched later reason will be
+# save reason.  If another shutdown-watchdog is launched later reason will be
 # overwritten and so will provide what we do when we wake.
 echo "$REASON" > $REASON_FILE
 
@@ -82,7 +83,7 @@ echo "$REASON" > $REASON_FILE
             ;;
     esac
 
-    # nuke all our omit files (in case multiple watchdogs were
+    # nuke all our omit files (in case multiple shutdown-watchdogs were
     # launched) so that they're not there after reboot.  But: what to
     # do about case where we don't run (the normal case)?  Somebody
     # needs to clean these up on boot.  For now, clear the directory
@@ -94,7 +95,8 @@ echo "$REASON" > $REASON_FILE
 WATCH_PID=$!
 
 mkdir -p $OMIT_DIR
-OMIT_FILE=$OMIT_DIR/watchdog.$WATCH_PID.pid
+OMIT_FILE=$OMIT_DIR/shutdown-watchdog.$WATCH_PID.pid
+SHUTDOWN_CANCEL_WATCHDOG=@WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-cancel-watchdog.sh
 echo $WATCH_PID > $OMIT_FILE
 echo "$0 sleeping for $SLEEP_SECONDS" | tee /dev/console
-echo "  to stop watchdog run 'kill_watchdog.sh'"
+echo "  to stop shutdown-watchdog run '$SHUTDOWN_CANCEL_WATCHDOG'"

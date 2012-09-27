@@ -17,5 +17,20 @@
 #
 # LICENSE@@@
 
-# stop fbprogress to properly clean the resources
-@WEBOS_INSTALL_BINDIR@/fbprogress -f stop
+echo "$0 starting" | logger -s
+
+# explicitly stop LunaSysMgr, and wait for it to complete, so that there
+# is no conflict when PmUpdater draws to display below
+echo "$0 stopping LunaSysMgr" | logger -s
+stop LunaSysMgr
+echo "$0 done stopping LunaSysMgr" | logger -s
+
+# wait a sec to be sure frame buffer is no longer being swapped, which
+# would cause PmUpdater's drawing to be offscreen
+sleep 1
+
+# launch fbprogress to draw the shutdown animation
+FBPROGRESS=@WEBOS_INSTALL_BINDIR@/fbprogress
+[ -e $FBPROGRESS ] && $FBPROGRESS -f battery-only &
+
+echo "$0 done" | logger -s

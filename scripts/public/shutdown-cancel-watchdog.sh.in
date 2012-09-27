@@ -29,22 +29,22 @@
 
 PATH=@WEBOS_INSTALL_BASE_SBINDIR@:@WEBOS_INSTALL_BASE_BINDIR@:@WEBOS_INSTALL_SBINDIR@:@WEBOS_INSTALL_BINDIR@
 
-[ -f @WEBOS_INSTALL_DEFAULTCONFDIR@/watchdog ] && . @WEBOS_INSTALL_DEFAULTCONFDIR@/watchdog
+[ -r @WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-watchdog ] && . @WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-watchdog
 
 rm -f $REASON_FILE
 
 if [ -d $OMIT_DIR ]; then
-    COUNT=$(ls $OMIT_DIR/watchdog.*.pid 2>/dev/null | wc -l)
+    COUNT=$(ls $OMIT_DIR/shutdown-watchdog.*.pid 2>/dev/null | wc -l)
     if [ $COUNT -eq 0 ]; then
-        echo "$0: no watchdog running" | logger -s
+        echo "$0: no shutdown-watchdog running" | logger -s
     else
-        for PIDFILE in $OMIT_DIR/watchdog.*.pid; do
+        for PIDFILE in $OMIT_DIR/shutdown-watchdog.*.pid; do
             PID=$(cat $PIDFILE)
             kill $PID
-            echo "$0: killed watchdog $PID" | logger -s
+            echo "$0: killed shutdown-watchdog $PID" | logger -s
             rm $PIDFILE
         done
     fi
 else
-    echo "$0: no watchdog running" | logger -s
+    echo "$0: no shutdown-watchdog running" | logger -s
 fi

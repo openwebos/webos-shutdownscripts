@@ -1,4 +1,3 @@
-#!/bin/sh
 # @@@LICENSE
 #
 #      Copyright (c) 2008-2012 Hewlett-Packard Development Company, L.P.
@@ -17,19 +16,8 @@
 #
 # LICENSE@@@
 
-echo "$0 starting" | logger -s
+# variables shared by shutdown-watchdog.sh and shutdown-cancel-watchdog.sh
 
-# explicitly stop LunaSysMgr, and wait for it to complete, so that there
-# is no conflict when PmUpdater draws to display below
-echo "$0 stopping LunaSysMgr" | logger -s
-stop LunaSysMgr
-echo "$0 done stopping LunaSysMgr" | logger -s
-
-# wait a sec to be sure frame buffer is no longer being swapped, which
-# would cause PmUpdater's drawing to be offscreen
-sleep 1
-
-# launch fbprogress to draw the shutdown animation
-@WEBOS_INSTALL_BINDIR@/fbprogress -f battery-only &
-
-echo "$0 done" | logger -s
+REASON_FILE="/tmp/shutdown-watchdog-reason.txt"
+OMIT_DIR=/tmp/sendsigs.omit.d
+OMIT_FILE_PAT=$OMIT_DIR/shutdown-watchdog.*.pid
