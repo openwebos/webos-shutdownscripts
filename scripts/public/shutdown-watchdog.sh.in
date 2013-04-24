@@ -2,6 +2,7 @@
 # @@@LICENSE
 #
 #      Copyright (c) 2008-2012 Hewlett-Packard Development Company, L.P.
+#      Copyright (c) 2013 LG Electronics, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,13 +26,11 @@
 #
 # Should probably be a parameter.  Will have to be a parameter if
 # called from rcU.d before the updater runs.
-# 
+#
 
 PATH=@WEBOS_INSTALL_BASE_SBINDIR@:@WEBOS_INSTALL_BASE_BINDIR@:@WEBOS_INSTALL_SBINDIR@:@WEBOS_INSTALL_BINDIR@
 
-# FIXME: restore default value of 60 when NOV-45753 is fixed
-# Note 2012-09-14 NOV-45753 is closed:will not implement
-SLEEP_SECONDS=120
+SLEEP_SECONDS=60
 
 [ -r @WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-watchdog ] && source @WEBOS_INSTALL_DEFAULTCONFDIR@/shutdown-watchdog
 
@@ -42,7 +41,7 @@ case "$1" in
         # do nothing
         ;;
     *)
-        echo "usage $0 start|stop # reboot or shutdown using tellbootie after $SLEEP_SECONDS seconds \\" >&2
+        echo "usage $0 start|stop # reboot or shutdown after $SLEEP_SECONDS seconds \\" >&2
         echo "    # with decision to reboot or shutdown based on current runlevel. \\" >&2
         echo "    # (start and stop parameters ignored.) \\" >&2
         exit 1
@@ -77,20 +76,17 @@ echo "$REASON" > $REASON_FILE
     # went wrong.
     [ -f $REASON_FILE ] && REASON=$(cat $REASON_FILE)
     case "$REASON" in
-        reboot|shutdown)
-        ;;                      # nothing to do
+        shutdown)
+            SHELL_CMD="@WEBOS_INSTALL_BASE_SBINDIR@/halt -f"
+            ;;
         *) REASON=reboot
+            SHELL_CMD="@WEBOS_INSTALL_BASE_SBINDIR@/reboot -f"
             ;;
     esac
 
-    # nuke all our omit files (in case multiple shutdown-watchdogs were
-    # launched) so that they're not there after reboot.  But: what to
-    # do about case where we don't run (the normal case)?  Somebody
-    # needs to clean these up on boot.  For now, clear the directory
-    # in mountall.sh?
-    echo "$0 tellbootie $REASON" | tee /dev/console | logger
+    echo "$0 $SHELL_CMD" | tee /dev/console | logger
     sleep 3                     # give message time to get out
-    tellbootie $REASON
+    $SHELL_CMD
 } &
 WATCH_PID=$!
 
